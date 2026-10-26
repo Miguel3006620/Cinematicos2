@@ -57,7 +57,7 @@ try {
 			</a>
 		</div>
 	<div class="col-xs-2 col-sm-3 col-md-5" >
-			<a href="Login_e_Validacao/login.php" class="btn btn-light">
+			<a href="Usuarios/Login_logout/login.php" class="btn btn-light">
 				<div class="row">
 					<div class="col-xs-12 text-center">
 						<i class="fa fa-user-group fa-10x"></i>

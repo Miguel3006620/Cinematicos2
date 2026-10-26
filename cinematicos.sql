@@ -21,13 +21,10 @@ CREATE TABLE usuarios(
     id int AUTO_INCREMENT not null PRIMARY KEY,
     nome varchar(50) not null,
     user varchar(50) not null,
-    password varchar(100) not null,
+    nivel TEXT not null,
+    password varchar(300) not null,
     foto varchar(50)
 );
-INSERT INTO usuarios (nome, user, password) 
-VALUES ('Zé Lele','zelele','5243897562837456982'),
-('Mary Zica','mazi','786098767869'),
-('Fugiru Nakombi','fugina','623485634753234');
 
 insert into filmes (titulo, autores, data_lancamento_oficial, estudio, valor_ingresso, sinopse, categoria, faixa_etaria, capa)
 values ('Umamusume: Pretty Derby - Beginning of a New Era', 'Ken Yamamoto', '2024-5-24', 'CygamesPictures', 57.00, 

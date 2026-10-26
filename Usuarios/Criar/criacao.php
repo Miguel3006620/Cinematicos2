@@ -6,7 +6,7 @@ include(HEADER_TEMPLATE);
 ?>
 
 <div id="actions" class="mt-5 mb-5">
-    <form action="valida.php" method="post">
+    <form action="valida.php" method="post" class="" enctype="multipart/form-data">
         <div class="row">
             <!-- apelido -->
             <div class="form-floating col-12 mb-2">

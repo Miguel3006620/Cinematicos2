@@ -222,6 +222,7 @@ function view($id = null)
 /**
  *  Exclusão de um Usuários
  */
+
 function delete($id = null)
 {
 
@@ -231,8 +232,4 @@ function delete($id = null)
     header("Location: index.php");
 }
 
-function clear_messages() {
-    $_SESSION['message'] = null;
-    $_SESSION['type'] = null;
-}
 ?>

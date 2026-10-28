@@ -5,33 +5,50 @@ include(DBAPI);
 include(HEADER_TEMPLATE);
 ?>
 
-<div id="actions" class="mt-5 mb-5">
-    <form action="valida.php" method="post" class="" enctype="multipart/form-data">
+<div id="actions" class="mt-5 mb-5 m2">
+    <form action="valida.php" method="post" style="margin: 2%" enctype="multipart/form-data">
         <div class="row">
-            <!-- apelido -->
-            <div class="form-floating col-12 mb-2">
-                <input type="text" class="form-control" id="apelido" placeholder="Apelido" name="nome">
-                <label for="apelido">Apelido</label>
+
+            <div class="form-control mb-4 d-flex flex-column align-items-center justify-content-center">
+                <img src="../imagens/usuario-generico.jpg" id="pfp" class="mb-4 rounded-circle" style="height: 250px; width: 250px; border: 1px solid gray; clear: both;">
+                <input type="file" style="display:none;" id="input" name="foto">
+                <label for="input" class="btn btn-light" style="border: 1px solid gray;"> Selecionar sua foto de perfil</label>
             </div>
 
-            <!-- user input -->
-            <div class="form-floating col-12 mb-2">
-                <input type="text" class="form-control" id="log" placeholder="Usuário" name="login">
-                <label for="log">Usuário</label>
-            </div>
-            <!-- Password input -->
-            <div class="form-floating col-12 mb-2">
-                <input type="password" class="form-control" id="pass" placeholder="Senha" name="senha">
-                <label for="pass">Senha</label>
-            </div>
+
+            <label for="apelido">Apelido</label>
+            <input type="text" class="form-control mb-2" id="apelido" placeholder="seu apelido" name="nome">
+
+            <label for="log">Usuário</label>
+            <input type="text" class="form-control mb-2" id="log" placeholder="nome de usuário" name="login">
+
+            <label for="apelido">Apelido</label>
+            <input type="password" class="form-control mb-3" id="pass" placeholder="sua senha" name="senha">
+
             <!-- Submit button -->
             <div class="col-12 mb-2">
                 <button type="submit" class="btn btn-secondary btn-block mb-4"><i class="fa-solid fa-user-check"></i>
-                    Conectar</button>
+                    Cadastrar</button>
                 <a href="<?php echo BASEURL; ?>" class="btn btn-light btn-block mb-4"><i
                         class="fa-solid fa-rotate-left"></i> Cancelar</a>
             </div>
         </div>
     </form>
 </div>
+
+<Script>
+    const input = document.getElementById('input');
+    const imagem = document.getElementById('pfp');
+
+    input.addEventListener('change', function() {
+        if (input.files && input.files[0]) {
+            const arquivo = input.files[0];
+
+            const urlTemporaria = URL.createObjectURL(arquivo);
+            imagem.src = urlTemporaria;
+
+            imagem.style.display = 'block';
+        }
+    });
+</Script>
 <?php include(FOOTER_TEMPLATE); ?>

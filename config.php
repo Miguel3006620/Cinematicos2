@@ -1,26 +1,25 @@
 <?php
 
-/** O nome do banco de dados*/
-// define('DB_NAME', 'wda_crud');
-const DB_NAME = "Cinematicos";
+/** O nome do banco de dados */
+if (!defined('DB_NAME')) define('DB_NAME', 'Cinematicos');
 
 /** Usuário do banco de dados MySQL */
-define('DB_USER', 'root');
+if (!defined('DB_USER')) define('DB_USER', 'root');
 
 /** Senha do banco de dados MySQL */
-define('DB_PASSWORD', '');
+if (!defined('DB_PASSWORD')) define('DB_PASSWORD', '');
 
 /** nome do host do MySQL */
-define('DB_HOST', 'localhost');
+if (!defined('DB_HOST')) define('DB_HOST', 'localhost');
 
-/** caminho absoluto para a pasta do sistema **/
-if ( !defined('ABSPATH') ) define('ABSPATH', dirname(__FILE__) . '/'); // não pode const aqui dentro
-	
-/** caminho no server para o sistema **/
-if ( !defined('BASEURL') ) define('BASEURL', '/Cinematicos2/'); //raiz do projeto. trocar para "/" quando hospedado
-	
-/** caminho do arquivo de banco de dados **/
-if ( !defined('DBAPI') ) define("DBAPI", ABSPATH . 'inc/database.php');
+/** caminho absoluto para a pasta do sistema */
+if (!defined('ABSPATH')) define('ABSPATH', dirname(__FILE__) . '/');
 
-const HEADER_TEMPLATE = ABSPATH . "inc/header.php";
-const FOOTER_TEMPLATE = ABSPATH . "inc/footer.php";
+/** caminho no server para o sistema */
+if (!defined('BASEURL')) define('BASEURL', '/Cinematicos2/'); // trocar para "/" quando hospedado
+
+/** caminho do arquivo de banco de dados */
+if (!defined('DBAPI')) define('DBAPI', ABSPATH . 'inc/database.php');
+
+if (!defined('HEADER_TEMPLATE')) define('HEADER_TEMPLATE', ABSPATH . 'inc/header.php');
+if (!defined('FOOTER_TEMPLATE')) define('FOOTER_TEMPLATE', ABSPATH . 'inc/footer.php');

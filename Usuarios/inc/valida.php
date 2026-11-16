@@ -1,7 +1,7 @@
 <?php
     // Esse é o valida.php
     include ("../../config.php");
-    include ("../a_parte/functions.php");
+    include ("../functions.php");
     require_once(DBAPI);
     include(HEADER_TEMPLATE);
     // Verifica se houve POST e se o usuário ou a senha é(são) vazio(s)

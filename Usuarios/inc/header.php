@@ -72,7 +72,7 @@
                             <?php endif; ?>
                             <li class="nav-item">
                                 <a class="nav-link" href="<?php echo BASEURL; ?>inc/logout.php">
-                                    Bem vindo <?php echo $_SESSION['user']; ?>! <i class="fa-solid fa-person-walking-arrow-right"></i> Desconectar
+                                    Bem vindo <?php echo $_SESSION['user'] ?>! <i class="fa-solid fa-person-walking-arrow-right"></i> Desconectar
                                 </a>
                             </li>
                         <?php else : ?>

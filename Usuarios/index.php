@@ -1,6 +1,6 @@
 <?php
 //esse é o index.php
-require("../a_parte/functions.php");
+require("functions.php");
 index();
 ?>
 
@@ -54,9 +54,9 @@ index();
                     <td><?php echo $usuario['user']; ?></td>
                     <td><?php
                     if (!empty($usuario['foto'])) {
-                        echo "<img src=\"fotos/" . $usuario['foto'] . "\" class=\"shadow p-1 mb-1 bg-body rounded\" width=\"100px\">";
+                        echo "<img src=\"imagens/" . $usuario['foto'] . "\" class=\"shadow p-1 mb-1 bg-body rounded\" width=\"100px\">";
                     } else {
-                        echo "<img src=\"fotos/semimagem.jpg\" class=\"shadow p-1 mb-1 bg-body rounded\" width=\"100px\">";
+                        echo "<img src=\"imagens/usuario-generico.jpg\" class=\"shadow p-1 mb-1 bg-body rounded\" width=\"100px\">";
                     }
                     ?>
                     </td>

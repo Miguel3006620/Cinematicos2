@@ -1,15 +1,7 @@
 <?php
-include "function.php";
+require_once __DIR__ . '/function.php';
+exigir_admin();
 
-try {
-    if (isset($_GET['id'])) {
-        delete($_GET['id']);
-    } //else {
-    //     die("ERRO: ID não definido.");
-    // }
-} catch (Exception $e) {
-    $_SESSION["message"] = "Nao foi possivel realizar a operacao.<br>{$e->getMessage()}";
-    $_SESSION["type"] = "danger";
-    header("location:index.php");
-}
-?>
+excluir_filme((int) ($_GET['id'] ?? 0));
+
+redirecionar('filmes/index.php');

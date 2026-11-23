@@ -1,20 +1,29 @@
 <?php
-//esse é o delete.php
-include "functions.php";
+require_once __DIR__ . '/functions.php';
 exigir_admin();
 
-if (isset($_GET['id'])) {
-    try {
-        $usuario = find("usuarios", $_GET['id']);
-        delete($_GET['id']); // redireciona para index.php
-        if (!empty($usuario['foto'])) {
-            @unlink(__DIR__ . "/imagens/" . $usuario['foto']);
+$id = (int) ($_GET['id'] ?? 0);
+
+if ($id <= 0) {
+    flash("ID inválido.");
+} elseif ($id === (int) ($_SESSION['id'] ?? 0)) {
+    flash("Você não pode excluir a própria conta enquanto estiver logado.");
+} else {
+    $alvo = buscar_usuario($id);
+
+    if (!$alvo) {
+        flash("Usuário não encontrado.");
+    } else {
+        clear_messages();
+        remove('usuarios', $id);
+
+        // Apaga a foto só se a exclusão deu certo (nunca apaga a foto padrão)
+        if (($_SESSION['type'] ?? '') === 'success'
+            && !empty($alvo['foto'])
+            && $alvo['foto'] !== FOTO_PADRAO) {
+            @unlink(__DIR__ . "/imagens/" . basename($alvo['foto']));
         }
-        exit;
-    } catch (Exception $e) {
-        $_SESSION['message'] = "Não foi possível realizar a operação: " . $e->getMessage();
-        $_SESSION['type'] = "danger";
     }
 }
-header("Location: index.php");
-exit;
+
+redirecionar('Usuarios/index.php');

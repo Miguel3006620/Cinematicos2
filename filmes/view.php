@@ -1,140 +1,83 @@
 <?php
-include('function.php');
-view($_GET['id']);
+require_once __DIR__ . '/function.php';
+exigir_login();
 
+$filme = buscar_filme((int) ($_GET['id'] ?? 0));
+if (!$filme) {
+    negar_acesso("Filme não encontrado.", 'filmes/index.php');
+}
 
 include(HEADER_TEMPLATE);
 ?>
-<br>
-<?php if (!empty($_SESSION['message'])) : ?>
-    <div class="alert alert-<?php echo $_SESSION['type']; ?>"><?php echo $_SESSION['message']; ?></div>
-<?php endif; ?>
-<style>
 
-</style>
 <div class="container py-4">
+    <?php mostrar_mensagem(); ?>
+
     <div class="movie-details-card">
-        <!-- Cabeçalho -->
         <div class="movie-details-header">
-            <div>
-                <h2>
-                    <i class="fa-solid fa-film"></i>
-                    <?php echo $filme['titulo']; ?>
-                </h2>
-                <span>Detalhes do filme</span>
-            </div>
+            <h2><i class="fa-solid fa-film"></i> <?= e($filme['titulo']) ?></h2>
+            <span>Detalhes do filme</span>
         </div>
 
-        <!-- Conteúdo -->
         <div class="movie-details-body">
-
-            <!-- Capa -->
             <div class="movie-poster">
-                <?php if (!empty($filme['capa'])) : ?>
-                    <img src="../imgs/<?php echo $filme['capa']; ?>" alt="Capa de <?php echo $filme['titulo']; ?>">
-                <?php else : ?>
-                    <img src="../imagens_site/sem_imagem.jpg" alt="Sem capa disponível">
-                <?php endif; ?>
+                <img src="<?= e(url_capa($filme['capa'])) ?>" alt="Capa de <?= e($filme['titulo']) ?>">
             </div>
 
-            <!-- Informações -->
             <div class="movie-info">
-
                 <div class="movie-title">
-                    <h1><?php echo $filme['titulo']; ?></h1>
-
+                    <h1><?= e($filme['titulo']) ?></h1>
                     <?php if (!empty($filme['faixa_etaria'])) : ?>
-                        <span class="age-rating">
-                            +<?php echo $filme['faixa_etaria']; ?>
-                        </span>
+                        <span class="age-rating">+<?= (int) $filme['faixa_etaria'] ?></span>
                     <?php endif; ?>
                 </div>
 
                 <div class="info-grid">
-
                     <div class="info-item">
-                        <span class="info-label">
-                            <i class="fa-solid fa-video"></i>
-                            Diretor(es)
-                        </span>
-                        <span class="info-value">
-                            <?php echo $filme['autores']; ?>
-                        </span>
+                        <span class="info-label"><i class="fa-solid fa-video"></i> Diretor(es)</span>
+                        <span class="info-value"><?= e($filme['autores']) ?></span>
                     </div>
 
                     <div class="info-item">
-                        <span class="info-label">
-                            <i class="fa-solid fa-building"></i>
-                            Estúdio
-                        </span>
-                        <span class="info-value">
-                            <?php echo $filme['estudio']; ?>
-                        </span>
+                        <span class="info-label"><i class="fa-solid fa-building"></i> Estúdio</span>
+                        <span class="info-value"><?= e($filme['estudio']) ?></span>
                     </div>
 
                     <div class="info-item">
-                        <span class="info-label">
-                            <i class="fa-solid fa-calendar-days"></i>
-                            Data de lançamento
-                        </span>
-                        <span class="info-value">
-                            <?php echo formatData($filme['data_lancamento_oficial'], "d/m/Y"); ?>
-                        </span>
+                        <span class="info-label"><i class="fa-solid fa-calendar-days"></i> Lançamento</span>
+                        <span class="info-value"><?= e(formatar_data($filme['data_lancamento_oficial'])) ?></span>
                     </div>
 
                     <div class="info-item">
-                        <span class="info-label">
-                            <i class="fa-solid fa-ticket"></i>
-                            Valor do ingresso
-                        </span>
-                        <span class="info-value price">
-                            <?php echo "R$ " . number_format($filme['valor_ingresso'], 2, ',', '.'); ?>
-                        </span>
+                        <span class="info-label"><i class="fa-solid fa-ticket"></i> Valor do ingresso</span>
+                        <span class="info-value price">R$ <?= number_format((float) $filme['valor_ingresso'], 2, ',', '.') ?></span>
                     </div>
 
                     <div class="info-item info-item-full">
-                        <span class="info-label">
-                            <i class="fa-solid fa-tags"></i>
-                            Gêneros
-                        </span>
-                        <span class="info-value">
-                            <?php echo $filme['categoria']; ?>
-                        </span>
+                        <span class="info-label"><i class="fa-solid fa-tags"></i> Gêneros</span>
+                        <span class="info-value"><?= e($filme['categoria']) ?></span>
                     </div>
-
                 </div>
 
-                <!-- Sinopse -->
                 <div class="synopsis">
-                    <h5>
-                        <i class="fa-solid fa-align-left"></i>
-                        Sinopse
-                    </h5>
-
-                    <p>
-                        <?php echo $filme['sinopse']; ?>
-                    </p>
+                    <h5><i class="fa-solid fa-align-left"></i> Sinopse</h5>
+                    <p><?= nl2br(e($filme['sinopse'])) ?></p>
                 </div>
-
             </div>
         </div>
 
-        <!-- Ações -->
         <div class="movie-actions">
             <a href="index.php" class="btn btn-light">
-                <i class="fa-solid fa-arrow-rotate-left"></i>
-                Voltar
+                <i class="fa-solid fa-arrow-rotate-left"></i> Voltar
             </a>
 
-            <a href="edit.php?id=<?php echo $filme['id']; ?>" class="btn btn-primary">
-                <i class="fa-solid fa-pen-to-square"></i>
-                Editar filme
-            </a>
+            <?php if (pode_editar_filme()) : ?>
+                <a href="edit.php?id=<?= (int) $filme['id'] ?>" class="btn btn-primary">
+                    <i class="fa-solid fa-pen-to-square"></i> Editar filme
+                </a>
+            <?php endif; ?>
         </div>
-
     </div>
-
 </div>
 
-
-<?php include FOOTER_TEMPLATE; ?>
+<?php include(FOOTER_TEMPLATE); ?>

@@ -1,60 +1,47 @@
 <?php
-ob_start();
-
 require_once __DIR__ . '/../config.php';
 require_once DBAPI;
 
-/**
- *  Formatar as datas
- */
-function formatadata($data, $formato)
-{
-    $dt = new DateTime($data, new DateTimeZone("America/Sao_Paulo"));
-    return $dt->format($formato);
-}
+const EXTENSOES_FOTO = ['jpg', 'jpeg', 'png', 'gif'];
+const FOTO_PADRAO    = 'usuario-generico.jpg';
 
-/**
- *  Formatar os telefones
- */
-function telefone($tel)
-{
-    return "(" . substr($tel, 0, 2) . ")" . substr($tel, 2, 5)
-        . "-" . substr($tel, 7, 4);
-}
+/* ---------- Consultas ---------- */
 
-/**
- *  Formatar os CEPs
- */
-function cep($cep)
+function listar_usuarios(): ?array
 {
-    // Se vira para fazer
-}
-
-/**
- *  Listagem de Usuários
- */
-$usuario = null;
-$usuarios = null;
-
-function index()
-{
-    global $usuarios;
     if (!empty($_POST['users'])) {
-        $usuarios = buscar_por_nome("usuarios", $_POST['users']);
-    } else {
-        $usuarios = find_all("usuarios");
+        return buscar_por_nome("usuarios", trim($_POST['users']));
     }
+    return find_all("usuarios");
 }
 
-function clear_messages()
+function buscar_usuario(int $id): ?array
 {
-    $_SESSION['message'] = null;
-    $_SESSION['type'] = null;
+    return $id > 0 ? (find("usuarios", $id) ?: null) : null;
 }
 
-/**
- *  Criptografia
- */
+// Verifica se o login já existe. $ignorarId evita comparar com o próprio usuário na edição.
+function usuario_existe(string $login, ?int $ignorarId = null): bool
+{
+    $bd = open_database();
+
+    if ($ignorarId !== null) {
+        $stmt = $bd->prepare("SELECT id FROM usuarios WHERE user = ? AND id <> ? LIMIT 1");
+        $stmt->bind_param("si", $login, $ignorarId);
+    } else {
+        $stmt = $bd->prepare("SELECT id FROM usuarios WHERE user = ? LIMIT 1");
+        $stmt->bind_param("s", $login);
+    }
+
+    $stmt->execute();
+    $existe = $stmt->get_result()->num_rows > 0;
+    close_database($bd);
+
+    return $existe;
+}
+
+/* ---------- Senha ---------- */
+
 function criptografia($senha)
 {
     /*
@@ -64,169 +51,155 @@ function criptografia($senha)
     $custo = "08";
     $salt = "Cf1f11ePArK1BJomM0F6aJ";
 
-    $hash = crypt($senha, "$2a$" . $custo . "$" . $salt . "$");
-
-    return $hash;
+    return crypt($senha, "$2a$" . $custo . "$" . $salt . "$");
 }
 
-/**
- *  Upload de imagens
- */
-function upload($pasta_destino, $arquivo_destino, $tipo_arquivo, $nome_temp, $tamanho_arquivo)
+/* ---------- Foto ---------- */
+
+// Valida e salva a foto em Usuarios/imagens. Retorna o nome do arquivo ou null (com mensagem de erro).
+function salvar_foto(array $arquivo): ?string
 {
-    try {
-        $nomearquivo = basename($arquivo_destino);
-
-        // Verifica sempre se o arquivo é uma imagem de verdade
-        $check = @getimagesize($nome_temp);
-        if ($check === false) {
-            throw new Exception("O arquivo não é uma imagem!");
-        }
-
-        // Verifica se o arquivo já existe na pasta
-        if (file_exists($arquivo_destino)) {
-            throw new Exception("Desculpe, o arquivo já existe!");
-        }
-
-        // Verifica o tamanho do arquivo (5 MB)
-        if ($tamanho_arquivo > 5000000) {
-            throw new Exception("Desculpe, mas o arquivo é muito grande!");
-        }
-
-        // Formatos permitidos
-        if (!in_array($tipo_arquivo, ["jpg", "png", "jpeg", "gif"], true)) {
-            throw new Exception("Desculpe, mas só são permitidos arquivos de imagem JPG, JPEG, PNG e GIF!");
-        }
-
-        if (move_uploaded_file($nome_temp, $arquivo_destino)) {
-            $_SESSION['message'] = "O arquivo " . htmlspecialchars($nomearquivo) . " foi armazenado.";
-            $_SESSION['type'] = "success";
-        } else {
-            throw new Exception("Desculpe, mas o arquivo não pode ser enviado.");
-        }
-    } catch (Exception $e) {
-        $_SESSION['message'] = "Aconteceu um erro: " . $e->getMessage();
-        $_SESSION['type'] = "danger";
+    if ($arquivo['error'] !== UPLOAD_ERR_OK) {
+        flash("Não foi possível enviar a foto. Tente outra imagem.");
+        return null;
     }
+
+    if ($arquivo['size'] > 5 * 1024 * 1024) {
+        flash("A foto é muito grande (máximo 5 MB).");
+        return null;
+    }
+
+    $ext = strtolower(pathinfo($arquivo['name'], PATHINFO_EXTENSION));
+    if (!in_array($ext, EXTENSOES_FOTO, true)) {
+        flash("Só são permitidos arquivos JPG, JPEG, PNG e GIF.");
+        return null;
+    }
+
+    if (@getimagesize($arquivo['tmp_name']) === false) {
+        flash("O arquivo enviado não é uma imagem válida.");
+        return null;
+    }
+
+    $nome = uniqid() . "." . $ext;
+
+    if (!move_uploaded_file($arquivo['tmp_name'], __DIR__ . "/imagens/" . $nome)) {
+        flash("Não foi possível salvar a foto no servidor.");
+        return null;
+    }
+
+    return $nome;
 }
 
-/**
- *  Cadastro de Usuários. Retorna true se gravou, false se falhou.
- */
-function add()
+/* ---------- Cadastro (público: sempre cria cliente) ---------- */
+
+function add(): bool
 {
-    $_SESSION['type'] = null;
+    $dados = $_POST['usuario'] ?? [];
+    $nome  = trim($dados['nome'] ?? '');
+    $user  = trim($dados['user'] ?? '');
+    $senha = $dados['password'] ?? '';
 
-    if (empty($_POST['usuario'])) {
-        $_SESSION['message'] = "Preencha os dados do cadastro.";
-        $_SESSION['type'] = "danger";
+    if ($nome === '' || $user === '' || $senha === '') {
+        flash("Preencha nome, usuário e senha.");
         return false;
     }
 
-    if (empty($_FILES["foto"]["name"]) || $_FILES["foto"]["error"] !== UPLOAD_ERR_OK) {
-        $_SESSION['message'] = "Você precisa selecionar uma foto de perfil.";
-        $_SESSION['type'] = "danger";
+    if (mb_strlen($nome) > 50 || mb_strlen($user) > 50) {
+        flash("Nome e usuário podem ter no máximo 50 caracteres.");
         return false;
     }
 
-    $usuario = $_POST['usuario'];
-
-    $pasta_destino = __DIR__ . "/imagens/";
-    $nomeoriginal = basename($_FILES["foto"]["name"]);
-    $tipo_arquivo = strtolower(pathinfo($nomeoriginal, PATHINFO_EXTENSION));
-    $nomearquivo = uniqid() . "." . $tipo_arquivo;
-    $arquivo_destino = $pasta_destino . $nomearquivo;
-
-    upload($pasta_destino, $arquivo_destino, $tipo_arquivo, $_FILES["foto"]["tmp_name"], $_FILES["foto"]["size"]);
-
-    if (($_SESSION['type'] ?? '') === 'danger') {
+    if (usuario_existe($user)) {
+        flash("Esse nome de usuário já está em uso. Escolha outro.");
         return false;
     }
 
-    $usuario['foto']  = $nomearquivo;
-    $usuario['nivel'] = NIVEL_USUARIO; // cadastro público sempre cria cliente
-
-    if (!empty($usuario['password'])) {
-        $usuario['password'] = criptografia($usuario['password']);
+    if (empty($_FILES['foto']['name'])) {
+        flash("Você precisa selecionar uma foto de perfil.");
+        return false;
     }
 
-    save('usuarios', $usuario);
+    $foto = salvar_foto($_FILES['foto']);
+    if ($foto === null) {
+        return false;
+    }
+
+    // O nível nunca vem do formulário: cadastro público sempre cria cliente
+    save('usuarios', [
+        'nome'     => $nome,
+        'user'     => $user,
+        'password' => criptografia($senha),
+        'nivel'    => NIVEL_USUARIO,
+        'foto'     => $foto,
+    ]);
 
     return ($_SESSION['type'] ?? '') === 'success';
 }
 
-/**
- *  Atualização/Edição de Usuários
- */
-function edit()
+/* ---------- Edição ---------- */
+
+// Atualiza nome, login, senha (opcional) e foto (opcional). Nunca altera id nem nivel.
+function atualizar_usuario(int $id): bool
 {
-    try {
-        if (isset($_GET['id'])) {
-
-            $id = $_GET['id'];
-
-            if (isset($_POST['usuario'])) {
-
-                $usuario = $_POST['usuario'];
-
-                // Impede que o formulário altere campos sensíveis
-                unset($usuario['id'], $usuario['nivel'], $usuario['foto']);
-
-                // Criptografa a senha, se foi informada
-                if (!empty($usuario['password'])) {
-                    $usuario['password'] = criptografia($usuario['password']);
-                } else {
-                    unset($usuario['password']); // campo vazio = mantém a senha atual
-                }
-
-                if (!empty($_FILES["foto"]["name"])) {
-                    $pasta_destino = __DIR__ . "/imagens/";
-                    $nomeoriginal  = basename($_FILES["foto"]["name"]);
-                    $tipo_arquivo  = strtolower(pathinfo($nomeoriginal, PATHINFO_EXTENSION));
-                    $nomearquivo   = uniqid() . "." . $tipo_arquivo;
-                    $arquivo_destino = $pasta_destino . $nomearquivo;
-
-                    upload($pasta_destino, $arquivo_destino, $tipo_arquivo, $_FILES["foto"]["tmp_name"], $_FILES["foto"]["size"]);
-
-                    if (($_SESSION['type'] ?? '') !== 'danger') {
-                        $usuario['foto'] = $nomearquivo;
-                    }
-                }
-
-                update('usuarios', $id, $usuario);
-                header('Location: index.php');
-                exit;
-            } else {
-                global $usuario;
-                $usuario = find("usuarios", $id);
-            }
-        } else {
-            header("Location: index.php");
-            exit;
-        }
-    } catch (Exception $e) {
-        $_SESSION['message'] = "Aconteceu um erro: " . $e->getMessage();
-        $_SESSION['type'] = "danger";
+    $atual = buscar_usuario($id);
+    if (!$atual) {
+        flash("Usuário não encontrado.");
+        return false;
     }
-}
 
-/**
- *  Visualização de um Usuário
- */
-function view($id = null)
-{
-    global $usuario;
-    $usuario = find("usuarios", $id);
-}
+    $dados = $_POST['usuario'] ?? [];
+    $nome  = trim($dados['nome'] ?? '');
+    $user  = trim($dados['user'] ?? '');
+    $senha = $dados['password'] ?? '';
 
-/**
- *  Exclusão de um Usuário
- */
-function delete($id = null)
-{
-    global $usuarios;
-    $usuarios = remove("usuarios", $id);
+    if ($nome === '' || $user === '') {
+        flash("Nome e usuário são obrigatórios.");
+        return false;
+    }
 
-    header("Location: index.php");
-    exit;
+    if (mb_strlen($nome) > 50 || mb_strlen($user) > 50) {
+        flash("Nome e usuário podem ter no máximo 50 caracteres.");
+        return false;
+    }
+
+    if (usuario_existe($user, $id)) {
+        flash("Esse nome de usuário já está em uso. Escolha outro.");
+        return false;
+    }
+
+    $alterar = ['nome' => $nome, 'user' => $user];
+
+    // Senha em branco = mantém a atual
+    if ($senha !== '') {
+        $alterar['password'] = criptografia($senha);
+    }
+
+    $fotoNova = null;
+    if (!empty($_FILES['foto']['name'])) {
+        $fotoNova = salvar_foto($_FILES['foto']);
+        if ($fotoNova === null) {
+            return false;
+        }
+        $alterar['foto'] = $fotoNova;
+    }
+
+    clear_messages();
+    update('usuarios', $id, $alterar);
+
+    if (($_SESSION['type'] ?? '') !== 'success') {
+        return false;
+    }
+
+    // Apaga a foto antiga, se foi trocada (nunca apaga a foto padrão)
+    if ($fotoNova !== null && !empty($atual['foto']) && $atual['foto'] !== FOTO_PADRAO) {
+        @unlink(__DIR__ . "/imagens/" . basename($atual['foto']));
+    }
+
+    // Se a pessoa editou a própria conta, atualiza a sessão
+    if ((int) ($_SESSION['id'] ?? 0) === $id) {
+        $_SESSION['nome'] = $nome;
+        $_SESSION['user'] = $user;
+    }
+
+    return true;
 }

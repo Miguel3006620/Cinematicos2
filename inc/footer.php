@@ -1,21 +1,14 @@
-    <hr>
-    </main> <!-- /container -->
-    <style>
-        p{
-            color:whitesmoke;
-            letter-spacing: 2px;
-            margin: 1%;
-        }
-    </style>
-    <foo class="navbar navbar-expand-lg bg-body-tertiary fixed-end container mb-3 " data-bs-theme="dark">
+    </main>
+
+    <footer class="bg-dark text-light text-center py-3 mt-4">
         <?php $dt = new DateTime("now", new DateTimeZone("America/Sao_Paulo")); ?>
-        <p >&copy;2026 à <?= $dt->format("Y")?> - Miguel Cappelli e Luiz Miguel</p>
+        <p class="mb-0" style="letter-spacing: 2px;">&copy; 2026 – <?= $dt->format("Y") ?> · Miguel Cappelli e Luiz Miguel</p>
     </footer>
 
-    <script src="<?php echo BASEURL; ?>js/jquery-4.0.0.min.js"></script>
-    <script src="<?php echo BASEURL; ?>js/bootstrap.bundle.min.js"></script>
-    <script src="<?php echo BASEURL; ?>js/all.min.js"></script>
-    <script src="<?php echo BASEURL; ?>js/main.js"></script>
-    </body>
+    <script src="<?= BASEURL ?>js/jquery-4.0.0.min.js"></script>
+    <script src="<?= BASEURL ?>js/bootstrap.bundle.min.js"></script>
+    <script src="<?= BASEURL ?>js/all.min.js"></script>
+    <script src="<?= BASEURL ?>js/main.js"></script>
+</body>
 
 </html>

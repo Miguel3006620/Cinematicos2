@@ -1,114 +1,64 @@
 <?php
-require "config.php";
-include_once DBAPI;
-if (!isset($_SESSION))
-    session_start();
+require_once __DIR__ . '/config.php';
 include(HEADER_TEMPLATE);
-$db = open_database();
 ?>
-<h1>Dashboard</h1>
-<hr>
 
-<?php if ($db): ?>
+<div class="pt-4">
+    <h1>Dashboard</h1>
+    <hr>
 
-    <div class="row">
-        <div class="col-lg-2 col-sm-3 col-md-2"><!-- Customers/Clientes -->
-            <a href="<?php echo BASEURL; ?>customers/add.php" class="btn btn-secondary">
-                <div class="row">
-                    <div class="col-xl-12 text-center">
-                        <!-- <i class="fa fa-plus fa-5x"></i> -->
-                        <i class="fa-solid fa-user-plus fa-5x"></i>
-                    </div>
-                    <div class="col-xl-12 text-center">
-                        <p>Novo Cliente</p>
-                    </div>
-                </div>
+    <?php mostrar_mensagem(); ?>
+
+    <?php if (!usuario_logado()) : ?>
+        <div class="text-center py-5">
+            <h3 class="mb-3">Bem-vindo ao Cinematicos</h3>
+            <p class="mb-4">Entre na sua conta ou crie uma para acessar o catálogo de filmes.</p>
+            <a href="<?= BASEURL ?>Usuarios/inc/login.php" class="btn btn-secondary me-2">
+                <i class="fa-solid fa-user-check"></i> Login
+            </a>
+            <a href="<?= BASEURL ?>Usuarios/add.php" class="btn btn-light">
+                <i class="fa-solid fa-user-plus"></i> Criar conta
             </a>
         </div>
-
-        <div class="col-lg-2 col-sm-3 col-md-2">
-            <a href="<?php echo BASEURL; ?>customers" class="btn btn-light">
-                <div class="row">
-                    <div class="col-xl-12 text-center">
-                        <!-- <i class="fa fa-user fa-5x"></i> -->
-                        <i class="fa-solid fa-users fa-5x"></i>
-                    </div>
-                    <div class="col-xl-12 text-center">
-                        <p>Clientes</p>
-                    </div>
-                </div>
-            </a>
-        </div>
-    </div>
-    <br>
-    <div class="row" id="actions"><!-- Linha dos produtos -->
-        <?php if (pode_ver_filmes()): ?>
-            <div class="col-lg-2 col-sm-3 col-md-2">
-                <a href="<?php echo BASEURL; ?>filmes" class="btn btn-light">
-                    ... (card "Filmes", igual ao atual) ...
-                </a>
-            </div>
-        <?php endif; ?>
-
-        <?php if (pode_adicionar_filme()): ?>
-            <div class="col-lg-2 col-sm-3 col-md-2">
-                <a href="<?php echo BASEURL; ?>filmes/add.php" class="btn btn-secondary">
-                    ... (card "Novo filme", igual ao atual) ...
-                </a>
-            </div>
-        <?php endif; ?>
-    </div>
-    <br>
-    <?php if (isset($_SESSION['user'])):  //Verifica se está existe usuário ?>
-        <?php if (pode_ver_usuarios()) :  //Verifica se está logado como admin ?>
-            
-            <div class="row" id="actions"><!-- Linha dos usuários -->
-                <?php if (pode_ver_usuarios()) :  //Verifica se está logado como admin ?>
-                <div class="col-lg-2 col-sm-3 col-md-2">
-                    <a href="<?php echo BASEURL; ?>usuarios/add.php" class="btn btn-secondary">
-                        <div class="row">
-                            <div class="col-xl-12 text-center">
-                                <!-- <i class="fa fa-plus fa-5x"></i> -->
-                                <i class="fa-solid fa-user-tie fa-5x"></i>
-                            </div>
-                            <div class="col-xl-12 text-center">
-                                <p>Novo Usuário</p>
-                            </div>
-                        </div>
+    <?php else : ?>
+        <div class="row g-3 mt-2">
+            <?php if (pode_ver_filmes()) : ?>
+                <div class="col-lg-2 col-sm-3 col-6">
+                    <a href="<?= BASEURL ?>filmes/index.php" class="btn btn-light w-100 p-3">
+                        <i class="fa-solid fa-boxes-stacked fa-3x d-block mb-2"></i>
+                        Filmes
                     </a>
                 </div>
-                <?php endif; ?>
+            <?php endif; ?>
 
-                <div class="col-lg-2 col-sm-3 col-md-2">
-                    <a href="<?php echo BASEURL; ?>usuarios" class="btn btn-light">
-                        <div class="row">
-                            <div class="col-xl-12 text-center">
-                                <!-- <i class="fa fa-user fa-5x"></i> -->
-                                <i class="fa-solid fa-user-lock fa-5x"></i>
-                            </div>
-                            <div class="col-xl-12 text-center">
-                                <p>Usuários</p>
-                            </div>
-                        </div>
+            <?php if (pode_adicionar_filme()) : ?>
+                <div class="col-lg-2 col-sm-3 col-6">
+                    <a href="<?= BASEURL ?>filmes/add.php" class="btn btn-secondary w-100 p-3">
+                        <i class="fa-solid fa-film fa-3x d-block mb-2"></i>
+                        Novo filme
                     </a>
                 </div>
-            </div>
-        <?php endif; ?>
-    <?php endif; ?>
-<?php else: ?>
-    <!-- Comentei a DIV abaixo -->
-    <!--
-            <div class="alert alert-danger" role="alert">
-                <p><strong>ERRO:</strong> Não foi possível Conectar ao Banco de Dados!</p>
-            </div> -->
-    <?php if (!empty($_SESSION['message'])): ?>
-        <div class="alert alert-<?php echo $_SESSION['type']; ?> alert-dismissible" role="alert">
-            <p><strong>ERRO:</strong> Não foi possível Conectar ao Banco de Dados!<br>
-                <?php echo $_SESSION['message']; ?></p>
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            <?php endif; ?>
+
+            <?php if (pode_ver_usuarios()) : ?>
+                <div class="col-lg-2 col-sm-3 col-6">
+                    <a href="<?= BASEURL ?>Usuarios/index.php" class="btn btn-light w-100 p-3">
+                        <i class="fa-solid fa-user-lock fa-3x d-block mb-2"></i>
+                        Usuários
+                    </a>
+                </div>
+            <?php endif; ?>
+
+            <?php if (pode_adicionar_usuario()) : ?>
+                <div class="col-lg-2 col-sm-3 col-6">
+                    <a href="<?= BASEURL ?>Usuarios/add.php" class="btn btn-secondary w-100 p-3">
+                        <i class="fa-solid fa-user-tie fa-3x d-block mb-2"></i>
+                        Novo usuário
+                    </a>
+                </div>
+            <?php endif; ?>
         </div>
-        <?php clear_messages(); ?>
     <?php endif; ?>
-<?php endif; ?>
+</div>
 
 <?php include(FOOTER_TEMPLATE); ?>

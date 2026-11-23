@@ -1,7 +1,9 @@
 <?php
-// Esse é o logout.php
-include("../../config.php");
-if (session_status() === PHP_SESSION_NONE) session_start();
+require_once __DIR__ . '/../../config.php';
+
+session_unset();
 session_destroy();
-header("Location: " . BASEURL . "index.php");
-exit;
+session_start();
+
+flash("Você saiu da conta.", 'info');
+redirecionar('index.php');

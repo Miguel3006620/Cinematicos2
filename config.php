@@ -1,5 +1,5 @@
 <?php
-
+require_once __DIR__ . '/auth.php';
 /** O nome do banco de dados */
 if (!defined('DB_NAME')) define('DB_NAME', 'Cinematicos');
 

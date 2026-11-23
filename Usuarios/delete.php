@@ -1,26 +1,20 @@
 <?php
 //esse é o delete.php
 include "functions.php";
+exigir_admin();
+
 if (isset($_GET['id'])) {
-
     try {
-        //consultando o usuário para obter o nome do arquivo da foto
         $usuario = find("usuarios", $_GET['id']);
-        // Chamando a função delete para apagar o usuário do banco de dados
-        delete($_GET['id']);
-        // Apagando o arquivo da foto do usuário pasta fotos
-
-        unlink("fotos/" . $usuario['foto']);
+        delete($_GET['id']); // redireciona para index.php
+        if (!empty($usuario['foto'])) {
+            @unlink(__DIR__ . "/imagens/" . $usuario['foto']);
+        }
+        exit;
     } catch (Exception $e) {
-        $_SESSION['message'] = "Não foi possivel realizar a operação:" . $e->GetMessage();
-
+        $_SESSION['message'] = "Não foi possível realizar a operação: " . $e->getMessage();
         $_SESSION['type'] = "danger";
     }
 }
-/*
-// Como era o arquivo original
-
-delete ($_GET['id']);
-} else {
-die ("ERRO: ID não definido.");
-} */
+header("Location: index.php");
+exit;

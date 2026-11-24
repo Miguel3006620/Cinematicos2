@@ -1,6 +1,6 @@
 <?php
 require_once __DIR__ . '/functions.php';
-exigir_login();
+exigir_admin();
 
 $usuario = buscar_usuario((int) ($_GET['id'] ?? 0));
 if (!$usuario) {

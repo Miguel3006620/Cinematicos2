@@ -56,7 +56,7 @@ function criptografia($senha)
 
 /* ---------- Foto ---------- */
 
-// Valida e salva a foto em Usuarios/imagens. Retorna o nome do arquivo ou null (com mensagem de erro).
+// Valida e salva a foto em Usuarios/imagens. Retorna o nome do arquivo ou null (com mensagem).
 function salvar_foto(array $arquivo): ?string
 {
     if ($arquivo['error'] !== UPLOAD_ERR_OK) {
@@ -90,8 +90,10 @@ function salvar_foto(array $arquivo): ?string
     return $nome;
 }
 
-/* ---------- Cadastro (público: sempre cria cliente) ---------- */
+/* ---------- Cadastro ---------- */
 
+// Visitante (cadastro público) sempre cria cliente comum.
+// Admin logado pode escolher o nível.
 function add(): bool
 {
     $dados = $_POST['usuario'] ?? [];
@@ -124,12 +126,16 @@ function add(): bool
         return false;
     }
 
-    // O nível nunca vem do formulário: cadastro público sempre cria cliente
+    $nivel = NIVEL_USUARIO;
+    if (is_admin() && in_array($dados['nivel'] ?? '', [NIVEL_ADMIN, NIVEL_USUARIO], true)) {
+        $nivel = $dados['nivel'];
+    }
+
     save('usuarios', [
         'nome'     => $nome,
         'user'     => $user,
         'password' => criptografia($senha),
-        'nivel'    => NIVEL_USUARIO,
+        'nivel'    => $nivel,
         'foto'     => $foto,
     ]);
 
@@ -138,7 +144,7 @@ function add(): bool
 
 /* ---------- Edição ---------- */
 
-// Atualiza nome, login, senha (opcional) e foto (opcional). Nunca altera id nem nivel.
+// Atualiza dados. Senha em branco mantém a atual. Nível só muda por admin.
 function atualizar_usuario(int $id): bool
 {
     $atual = buscar_usuario($id);
@@ -169,7 +175,21 @@ function atualizar_usuario(int $id): bool
 
     $alterar = ['nome' => $nome, 'user' => $user];
 
-    // Senha em branco = mantém a atual
+    if (is_admin()) {
+        $nivel = $dados['nivel'] ?? $atual['nivel'];
+        if (!in_array($nivel, [NIVEL_ADMIN, NIVEL_USUARIO], true)) {
+            $nivel = $atual['nivel'];
+        }
+
+        // Ninguém remove o próprio acesso de admin
+        if ($id === (int) ($_SESSION['id'] ?? 0) && $nivel !== NIVEL_ADMIN) {
+            flash("Você não pode remover o seu próprio acesso de administrador.");
+            return false;
+        }
+
+        $alterar['nivel'] = $nivel;
+    }
+
     if ($senha !== '') {
         $alterar['password'] = criptografia($senha);
     }
@@ -195,8 +215,8 @@ function atualizar_usuario(int $id): bool
         @unlink(__DIR__ . "/imagens/" . basename($atual['foto']));
     }
 
-    // Se a pessoa editou a própria conta, atualiza a sessão
-    if ((int) ($_SESSION['id'] ?? 0) === $id) {
+    // Se o admin editou a própria conta, atualiza a sessão
+    if ($id === (int) ($_SESSION['id'] ?? 0)) {
         $_SESSION['nome'] = $nome;
         $_SESSION['user'] = $user;
     }

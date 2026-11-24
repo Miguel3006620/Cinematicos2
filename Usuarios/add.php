@@ -4,7 +4,7 @@ include(HEADER_TEMPLATE);
 ?>
 
 <div class="pt-4" style="max-width: 640px; margin: auto;">
-    <h2 class="mb-3"><i class="fa-solid fa-user-plus"></i> Criar conta</h2>
+    <h2 class="mb-3"><i class="fa-solid fa-user-plus"></i> <?= is_admin() ? 'Cadastrar usuário' : 'Criar conta' ?></h2>
 
     <?php mostrar_mensagem(); ?>
 
@@ -14,7 +14,7 @@ include(HEADER_TEMPLATE);
                 style="height: 200px; width: 200px; object-fit: cover; border: 1px solid gray;" alt="Foto de perfil">
             <br>
             <input type="file" accept="image/*" id="input" name="foto" class="d-none">
-            <label for="input" class="btn btn-light">Selecionar sua foto de perfil</label>
+            <label for="input" class="btn btn-light">Selecionar foto de perfil</label>
         </div>
 
         <div class="mb-3">
@@ -29,11 +29,21 @@ include(HEADER_TEMPLATE);
                 placeholder="nome de usuário" required>
         </div>
 
-        <div class="mb-4">
+        <div class="mb-3">
             <label for="pass" class="form-label">Senha</label>
             <input type="password" class="form-control" id="pass" name="usuario[password]"
                 placeholder="sua senha" autocomplete="new-password" required>
         </div>
+
+        <?php if (is_admin()) : ?>
+            <div class="mb-4">
+                <label for="nivel" class="form-label">Nível de acesso</label>
+                <select class="form-select" id="nivel" name="usuario[nivel]">
+                    <option value="<?= NIVEL_USUARIO ?>" selected>Cliente</option>
+                    <option value="<?= NIVEL_ADMIN ?>">Admin</option>
+                </select>
+            </div>
+        <?php endif; ?>
 
         <div class="d-flex gap-2 mb-4">
             <button type="submit" class="btn btn-secondary"><i class="fa-solid fa-user-check"></i> Cadastrar</button>

@@ -26,6 +26,15 @@ CREATE TABLE usuarios(
     foto varchar(50)
 );
 
+CREATE TABLE IF NOT EXISTS clientes (
+    id int AUTO_INCREMENT NOT NULL PRIMARY KEY,
+    nome varchar(100) NOT NULL,
+    email varchar(120) NOT NULL,
+    telefone varchar(20) NOT NULL,
+    data_nascimento date NOT NULL,
+    cidade varchar(80) NOT NULL
+);
+
 insert into filmes (titulo, autores, data_lancamento_oficial, estudio, valor_ingresso, sinopse, categoria, faixa_etaria, capa)
 values ('Umamusume: Pretty Derby - Beginning of a New Era', 'Ken Yamamoto', '2024-5-24', 'CygamesPictures', 57.00, 
 'Jungle Pocket, uma jovem umamusume, sonha em se tornar a melhor corredora. Mas, na pista, não há espaço para dúvidas: talento, rivalidade e determinação se enfrentam a cada corrida.

@@ -69,7 +69,7 @@ function negar_acesso(string $mensagem, string $destino = 'index.php'): void
 
 /* ---------- Verificações de acesso (use no topo de cada página) ---------- */
 
-// Visitante é enviado para o login
+// Precisa estar logado. Visitante vai para o login.
 function exigir_login(): void
 {
     if (!usuario_logado()) {
@@ -78,7 +78,7 @@ function exigir_login(): void
     }
 }
 
-// Só admin. Visitante vai ao login; cliente volta ao início com aviso.
+// Só admin. Visitante vai para o login; cliente comum volta ao início com aviso.
 function exigir_admin(): void
 {
     exigir_login();
@@ -95,7 +95,7 @@ function exigir_post(string $destino): void
     }
 }
 
-// Login: quem já está logado não precisa ver a tela
+// Tela de login: quem já está logado é mandado para o início
 function redirecionar_se_logado(): void
 {
     if (usuario_logado()) {
@@ -103,22 +103,22 @@ function redirecionar_se_logado(): void
     }
 }
 
-/* ---------- Permissões ---------- */
+/* ---------- Permissões (conforme a matriz de acesso) ---------- */
 
-// Usuários
-function pode_ver_usuarios(): bool      { return usuario_logado(); }
-function pode_adicionar_usuario(): bool { return is_admin(); }
-function pode_excluir_usuario(): bool   { return is_admin(); }
+// Filmes: visitante lista e visualiza. Logado cadastra, edita e exclui.
+function pode_ver_filmes(): bool        { return true; }
+function pode_adicionar_filme(): bool   { return usuario_logado(); }
+function pode_editar_filme(): bool      { return usuario_logado(); }
+function pode_excluir_filme(): bool     { return usuario_logado(); }
 
-// Admin edita qualquer um. Cliente edita só clientes (inclusive a si mesmo), nunca admins.
-function pode_editar_usuario(array $alvo): bool
-{
-    if (is_admin()) return true;
-    return usuario_logado() && ($alvo['nivel'] ?? '') === NIVEL_USUARIO;
-}
+// Clientes: mesma regra dos filmes
+function pode_ver_clientes(): bool        { return true; }
+function pode_adicionar_cliente(): bool   { return usuario_logado(); }
+function pode_editar_cliente(): bool      { return usuario_logado(); }
+function pode_excluir_cliente(): bool     { return usuario_logado(); }
 
-// Filmes: cliente vê. Só admin cria, edita e exclui.
-function pode_ver_filmes(): bool      { return usuario_logado(); }
-function pode_adicionar_filme(): bool { return is_admin(); }
-function pode_editar_filme(): bool    { return is_admin(); }
-function pode_excluir_filme(): bool   { return is_admin(); }
+// Usuários: só admin faz qualquer coisa
+function pode_ver_usuarios(): bool                    { return is_admin(); }
+function pode_adicionar_usuario(): bool               { return is_admin(); }
+function pode_editar_usuario(array $alvo = []): bool  { return is_admin(); }
+function pode_excluir_usuario(): bool                 { return is_admin(); }

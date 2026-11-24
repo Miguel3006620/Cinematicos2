@@ -1,6 +1,6 @@
 <?php
 require_once __DIR__ . '/function.php';
-exigir_admin();
+exigir_login();
 
 $ehPost = ($_SERVER['REQUEST_METHOD'] ?? '') === 'POST';
 

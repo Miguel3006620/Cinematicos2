@@ -1,5 +1,16 @@
 <?php
 require_once __DIR__ . '/config.php';
+
+// Monta um card do dashboard
+function card(string $href, string $icone, string $texto, string $classe = 'btn-light'): string
+{
+    return '<div class="col-lg-2 col-sm-3 col-6">'
+        . '<a href="' . e(BASEURL . $href) . '" class="btn ' . $classe . ' w-100 p-3">'
+        . '<i class="fa-solid ' . $icone . ' fa-3x d-block mb-2"></i>'
+        . e($texto)
+        . '</a></div>';
+}
+
 include(HEADER_TEMPLATE);
 ?>
 
@@ -10,55 +21,27 @@ include(HEADER_TEMPLATE);
     <?php mostrar_mensagem(); ?>
 
     <?php if (!usuario_logado()) : ?>
-        <div class="text-center py-5">
-            <h3 class="mb-3">Bem-vindo ao Cinematicos</h3>
-            <p class="mb-4">Entre na sua conta ou crie uma para acessar o catálogo de filmes.</p>
-            <a href="<?= BASEURL ?>Usuarios/inc/login.php" class="btn btn-secondary me-2">
-                <i class="fa-solid fa-user-check"></i> Login
-            </a>
-            <a href="<?= BASEURL ?>Usuarios/add.php" class="btn btn-light">
-                <i class="fa-solid fa-user-plus"></i> Criar conta
-            </a>
-        </div>
-    <?php else : ?>
-        <div class="row g-3 mt-2">
-            <?php if (pode_ver_filmes()) : ?>
-                <div class="col-lg-2 col-sm-3 col-6">
-                    <a href="<?= BASEURL ?>filmes/index.php" class="btn btn-light w-100 p-3">
-                        <i class="fa-solid fa-boxes-stacked fa-3x d-block mb-2"></i>
-                        Filmes
-                    </a>
-                </div>
-            <?php endif; ?>
-
-            <?php if (pode_adicionar_filme()) : ?>
-                <div class="col-lg-2 col-sm-3 col-6">
-                    <a href="<?= BASEURL ?>filmes/add.php" class="btn btn-secondary w-100 p-3">
-                        <i class="fa-solid fa-film fa-3x d-block mb-2"></i>
-                        Novo filme
-                    </a>
-                </div>
-            <?php endif; ?>
-
-            <?php if (pode_ver_usuarios()) : ?>
-                <div class="col-lg-2 col-sm-3 col-6">
-                    <a href="<?= BASEURL ?>Usuarios/index.php" class="btn btn-light w-100 p-3">
-                        <i class="fa-solid fa-user-lock fa-3x d-block mb-2"></i>
-                        Usuários
-                    </a>
-                </div>
-            <?php endif; ?>
-
-            <?php if (pode_adicionar_usuario()) : ?>
-                <div class="col-lg-2 col-sm-3 col-6">
-                    <a href="<?= BASEURL ?>Usuarios/add.php" class="btn btn-secondary w-100 p-3">
-                        <i class="fa-solid fa-user-tie fa-3x d-block mb-2"></i>
-                        Novo usuário
-                    </a>
-                </div>
-            <?php endif; ?>
+        <div class="alert alert-secondary d-flex flex-wrap justify-content-between align-items-center gap-2">
+            <span>Entre ou crie uma conta para cadastrar, editar e excluir registros.</span>
+            <span>
+                <a href="<?= BASEURL ?>Usuarios/inc/login.php" class="btn btn-secondary btn-sm">Login</a>
+                <a href="<?= BASEURL ?>Usuarios/add.php" class="btn btn-light btn-sm">Criar conta</a>
+            </span>
         </div>
     <?php endif; ?>
+
+    <div class="row g-3 mt-2">
+        <?php
+        echo card('filmes/index.php', 'fa-boxes-stacked', 'Filmes');
+        if (pode_adicionar_filme()) echo card('filmes/add.php', 'fa-film', 'Novo filme', 'btn-secondary');
+
+        echo card('clientes/index.php', 'fa-address-book', 'Clientes');
+        if (pode_adicionar_cliente()) echo card('clientes/add.php', 'fa-user-plus', 'Novo cliente', 'btn-secondary');
+
+        if (pode_ver_usuarios()) echo card('Usuarios/index.php', 'fa-user-lock', 'Usuários');
+        if (pode_adicionar_usuario()) echo card('Usuarios/add.php', 'fa-user-tie', 'Novo usuário', 'btn-secondary');
+        ?>
+    </div>
 </div>
 
 <?php include(FOOTER_TEMPLATE); ?>

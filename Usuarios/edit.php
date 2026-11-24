@@ -1,6 +1,6 @@
 <?php
 require_once __DIR__ . '/functions.php';
-exigir_login();
+exigir_admin();
 
 $id = (int) ($_GET['id'] ?? 0);
 $usuario = buscar_usuario($id);
@@ -9,21 +9,17 @@ if (!$usuario) {
     negar_acesso("Usuário não encontrado.", 'Usuarios/index.php');
 }
 
-// Cliente só edita outros clientes (e a si mesmo). Admin edita todos.
-if (!pode_editar_usuario($usuario)) {
-    negar_acesso("Você só pode editar outros clientes.", 'Usuarios/index.php');
-}
-
 $ehPost = ($_SERVER['REQUEST_METHOD'] ?? '') === 'POST';
 
 if ($ehPost) {
-    if (atualizar_usuario($usuario['id'])) {
+    if (atualizar_usuario((int) $usuario['id'])) {
         flash("Usuário atualizado com sucesso.", 'success');
         redirecionar('Usuarios/index.php');
     }
-    // Se falhou, mostra o formulário com o que foi digitado
-    $usuario['nome'] = $_POST['usuario']['nome'] ?? $usuario['nome'];
-    $usuario['user'] = $_POST['usuario']['user'] ?? $usuario['user'];
+    // Se falhou, mostra o que foi digitado
+    $usuario['nome']  = $_POST['usuario']['nome']  ?? $usuario['nome'];
+    $usuario['user']  = $_POST['usuario']['user']  ?? $usuario['user'];
+    $usuario['nivel'] = $_POST['usuario']['nivel'] ?? $usuario['nivel'];
 }
 
 include(HEADER_TEMPLATE);
@@ -39,16 +35,24 @@ $foto = !empty($usuario['foto']) ? $usuario['foto'] : FOTO_PADRAO;
 
     <form action="edit.php?id=<?= (int) $usuario['id'] ?>" method="post" enctype="multipart/form-data">
         <div class="row g-3">
-            <div class="col-md-8">
+            <div class="col-md-6">
                 <label for="nome" class="form-label">Nome</label>
                 <input type="text" class="form-control" id="nome" name="usuario[nome]" maxlength="50"
                     value="<?= e($usuario['nome']) ?>" required>
             </div>
 
-            <div class="col-md-4">
+            <div class="col-md-6">
                 <label for="user" class="form-label">Usuário (login)</label>
                 <input type="text" class="form-control" id="user" name="usuario[user]" maxlength="50"
                     value="<?= e($usuario['user']) ?>" required>
+            </div>
+
+            <div class="col-md-4">
+                <label for="nivel" class="form-label">Nível de acesso</label>
+                <select class="form-select" id="nivel" name="usuario[nivel]">
+                    <option value="<?= NIVEL_USUARIO ?>" <?= $usuario['nivel'] === NIVEL_USUARIO ? 'selected' : '' ?>>Cliente</option>
+                    <option value="<?= NIVEL_ADMIN ?>" <?= $usuario['nivel'] === NIVEL_ADMIN ? 'selected' : '' ?>>Admin</option>
+                </select>
             </div>
 
             <div class="col-md-4">
@@ -57,7 +61,7 @@ $foto = !empty($usuario['foto']) ? $usuario['foto'] : FOTO_PADRAO;
                     autocomplete="new-password" placeholder="Deixe em branco para manter">
             </div>
 
-            <div class="col-md-5">
+            <div class="col-md-4">
                 <label for="foto" class="form-label">Trocar foto</label>
                 <input type="file" class="form-control" id="foto" name="foto" accept="image/*">
             </div>
